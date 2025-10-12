@@ -1,7 +1,14 @@
 #include "Award.h"
 #include "GameManager.h"
 #include "GuardTile.h"
+
+#include <iostream>
 using namespace std;
+
+// constructor — initialize values and set triggered = false
+Award::Award(int r, int c, double tBonus, int weaken) : DoorTile(r, c), timeBonus(tBonus), guardWeakenAmount(weaken) {
+  triggered = false;
+}
 
 void Award::trigger(Player& p, GameManager& gm) {
   if (!triggered) {
