@@ -18,19 +18,26 @@ bool FoodTile::isWalkable() const {
 
 void FoodTile::interact(Player& p, GameManager& gm) {
   if (food != nullptr) {
-    // add food's nutritionValue value to player's strength
-    food->use(p);
 
-    // clean up the food object
-    delete food;
-    food = nullptr;
+  // Store name and value BEFORE deleting food
+  string foodName = food->getName();
+  int foodValue = food->getValue();
 
-    // replace this tile with a floor tile
-    gm.replaceWithFloor(getRow(), getCol());
+  // apply the food effect to player (this already prints collected message if enabled)
+  food->use(p);
 
-    cout << "Picked up " << food->getName() << "! Strength increased by " << food->getValue() << endl;
+  // delete food object
+  delete food;
+  food = nullptr;
 
-  } else {
+  // replace with floor tile
+  gm.replaceWithFloor(getRow(), getCol());
+
+  // ✅ Now safe to print info using stored values
+  cout << "Picked up " << foodName << "! Strength increased by " << foodValue << endl;
+
+  } 
+  else {
     cout << "No food left here." << endl;
   }
 }
