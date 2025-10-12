@@ -15,6 +15,8 @@
 
 #include <cstdlib>   // rand, srand, system
 #include <ctime>     // time
+#include <iostream>
+
 //file read and write
 #include <fstream>   // std::ifstream, std::ofstream
 #include <sstream>   // std::istringstream
@@ -174,24 +176,24 @@ void GameManager::spawnDoorsForLevel() {
     minDoors = 3;
     maxDoors = 5;
 
-    doorSlots.push_back(std::make_pair(2, 7));
-    doorSlots.push_back(std::make_pair(3, 11));
-    doorSlots.push_back(std::make_pair(4, 4));
-    doorSlots.push_back(std::make_pair(6, 9));
-    doorSlots.push_back(std::make_pair(8, 5));
-    doorSlots.push_back(std::make_pair(10, 10));
-    doorSlots.push_back(std::make_pair(12, 3));
-    doorSlots.push_back(std::make_pair(13, 12));
+    doorSlots.push_back(make_pair(2, 7));
+    doorSlots.push_back(make_pair(3, 11));
+    doorSlots.push_back(make_pair(4, 4));
+    doorSlots.push_back(make_pair(6, 9));
+    doorSlots.push_back(make_pair(8, 5));
+    doorSlots.push_back(make_pair(10, 10));
+    doorSlots.push_back(make_pair(12, 3));
+    doorSlots.push_back(make_pair(13, 12));
   } 
   else {
     minDoors = 2;
     maxDoors = 3;
 
-    doorSlots.push_back(std::make_pair(2, 5));
-    doorSlots.push_back(std::make_pair(3, 7));
-    doorSlots.push_back(std::make_pair(5, 3));
-    doorSlots.push_back(std::make_pair(6, 8));
-    doorSlots.push_back(std::make_pair(7, 5));
+    doorSlots.push_back(make_pair(2, 5));
+    doorSlots.push_back(make_pair(3, 7));
+    doorSlots.push_back(make_pair(5, 3));
+    doorSlots.push_back(make_pair(6, 8));
+    doorSlots.push_back(make_pair(7, 5));
   }
 
   // pick how many doors to place
@@ -305,15 +307,17 @@ void GameManager::handleInput(char key) {
   } else if (key == 'a' || key == 'A') {
     tryMovePlayer(0, -1);
   } else if (key == 'd' || key == 'D') {
-    tryMovePlayer(0, 1);
-  } else if (key == ' ') {
-    // SPACE interacts with the tile you are standing on (food or guard)
+    tryMovePlayer(0, 1);  
+  }
+  else if (key == ' ' || key == 'i' || key == 'I') {
+    // INTERACT: space (GUI) or I (CLI)
     MazeTile* t = tileAt(playerPtr->getRow(), playerPtr->getCol());
     if (t != NULL) {
       t->interact(*playerPtr, *this);
     }
     checkWinLose();
-  } else if (key == 'q' || key == 'Q') {
+  } 
+  else if (key == 'q' || key == 'Q') {
     endGameLose(); // or set a quit flag; for now, treat as quit/lose
   }
   else if (key == 'p' || key == 'P') {
