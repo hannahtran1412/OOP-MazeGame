@@ -17,7 +17,3 @@ void DoorTile::interact(Player& p, GameManager& gm) {
   cout << "Door triggers automatically when you step on it." << endl;
 }
 
-
-
-
-}
