@@ -21,3 +21,11 @@ void GuardTile::interact(Player& p, GameManager& gm){
     gm.endGameLose();
   }
 }
+
+Guard& GuardTile::getGuard() {
+    return guard;
+}
+
+void GuardTile::weakenGuard(int amt) {
+    guard.weaken(amt);
+}

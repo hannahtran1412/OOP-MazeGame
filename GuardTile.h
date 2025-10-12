@@ -13,6 +13,8 @@ public:
     GuardTile(int r, int c, Guard g);
     bool isWalkable() const override;
     void interact(Player& p, GameManager& gm) override;
+    Guard& getGuard();          // returns reference to internal Guard
+    void weakenGuard(int amt);  // convenience that calls guard.weaken(amt)
 };
 
 #endif

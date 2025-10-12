@@ -50,7 +50,7 @@ GameManager::GameManager(bool hard) {
   guardCol = -1;
 
   // player on heap (matches Player* in header)
-  playerPtr = new Player(1, 1, 0);
+  playerPtr = new Player("Hero",1, 1, 0);
 
   // prepare the maze grid (rows x cols) with nullptr
   maze.resize(rows);
@@ -236,7 +236,7 @@ void GameManager::spawnDoorsForLevel() {
     }
 
     if (!t->isWalkable()) {
-        ontinue;
+      continue;
     }
 
     // flip a coin: award or trap
