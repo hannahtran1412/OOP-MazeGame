@@ -15,6 +15,9 @@
 
 #include <cstdlib>   // rand, srand, system
 #include <ctime>     // time
+//file read and write
+#include <fstream>   // std::ifstream, std::ofstream
+#include <sstream>   // std::istringstream
 using namespace std;
 
 // ------------------------------
@@ -539,13 +542,255 @@ void GameManager::endGameLose() {
 // ------------------------------
 // Save / Load (to be implemented later)
 // ------------------------------
-void GameManager::saveGame(const std::string& /*filename*/) const {
-  // TODO: write player position, timeRemaining, and simple tiles to a file.
+void GameManager::saveGame(const std::string& filename) const {
+  // Open file for writing (overwrite)
+  ofstream out;
+  out.open(filename.c_str(), ios::out);
+  if (!out.is_open()) {
+    cout << "Could not open save file.\n";
+    return;
+  }
+
+  // Save basic state (player, time)
+  // PLAYER <row> <col> <strength>
+  out << "PLAYER " 
+    << playerPtr->getRow() << " "
+    << playerPtr->getCol() << " "
+    << playerPtr->getStrength() << "\n";
+
+  // TIME <seconds_left>
+  out << "TIME " << timeRemaining << "\n";
+
+  // GUARD <row> <col> <hp> <defeatedFlag 0/1>
+  // If you ever move the guard elsewhere, guardRow/guardCol should track it.
+  int defeatedFlag = guardDefeated ? 1 : 0;
+  out << "GUARD " << guardRow << " " << guardCol << " ";
+
+  // Try to read current guard HP from the board if present- if defeated, write 0.
+  int guardHPToSave = 0;
+  MazeTile* gtTile = tileAt(guardRow, guardCol);
+  GuardTile* gt = NULL;
+  if (gtTile != NULL) {
+    gt = dynamic_cast<GuardTile*>(gtTile);
+  }
+  if (gt != NULL && !guardDefeated) {
+    guardHPToSave = gt->getGuard().getHealth();
+  }
+  out << guardHPToSave << " " << defeatedFlag << "\n";
+
+  // Now write special tiles that currently exist.
+  // We’ll keep it simple and human-readable:
+  // FOOD r c val
+  // AWARD r c
+  // TRAP r c
+  // (Walls/floors are rebuilt automatically on load.)
+  for (int r = 0; r < rows; r = r + 1) {
+    for (int c = 0; c < cols; c = c + 1) {
+      // Skip player position (we already saved it)
+      if (playerPtr->getRow() == r && playerPtr->getCol() == c) {
+        continue;
+      }
+
+      MazeTile* t = maze[r][c];
+      if (t == NULL) {
+        continue;
+      }
+
+      // Don’t serialize walls/floors; we rebuild them.
+      // Serialize only special stuff:
+      // 1) Food
+      FoodTile* ft = dynamic_cast<FoodTile*>(t);
+      if (ft != NULL) {
+        Food* f = ft->getFood();
+        if (f != NULL) {
+          // Save its value
+          out << "FOOD " << r << " " << c << " " << f->getValue() << "\n";
+        }
+        continue;
+      }
+
+      // 2) Doors (Award / Trap)
+      Award* aw = dynamic_cast<Award*>(t);
+      if (aw != NULL) {
+        out << "AWARD " << r << " " << c << "\n";
+        continue;
+      }
+      Trap* tr = dynamic_cast<Trap*>(t);
+      if (tr != NULL) {
+        out << "TRAP " << r << " " << c << "\n";
+        continue;
+      }
+
+      // 3) Guard — already saved via GUARD line, skip here
+      GuardTile* gtt = dynamic_cast<GuardTile*>(t);
+      if (gtt != NULL) {
+        continue;
+      }
+    }
+  }
+
+  out << "END\n";
+  out.close();
+  cout << "Game saved to " << filename << "\n";
 }
 
-bool GameManager::loadGame(const std::string& /*filename*/) {
-  // TODO: read state back and rebuild the maze.
+bool GameManager::loadGame(const std::string& filename) {
+  ifstream in;
+  in.open(filename.c_str(), ios::in);
+  if (!in.is_open()) {
+  cout << "Could not open save file to load.\n";
   return false;
+  }
+
+  // 1) Wipe current board tiles to avoid leaks
+  for (int r = 0; r < rows; r = r + 1) {
+    for (int c = 0; c < cols; c = c + 1) {
+      if (maze[r][c] != NULL) {
+      delete maze[r][c];
+      maze[r][c] = NULL;
+      }
+    }
+  }
+
+  // 2) Rebuild base: border walls + inner floor (same as your init walls/floors)
+  for (int r = 0; r < rows; r = r + 1) {
+    for (int c = 0; c < cols; c = c + 1) {
+      bool border = (r == 0 || c == 0 || r == rows - 1 || c == cols - 1);
+      if (border) {
+        maze[r][c] = new WallTile(r, c);
+      } else {
+        maze[r][c] = new FloorTile(r, c);
+      }
+    }
+  }
+
+  // 3) Defaults before reading
+  int pRow = 1;
+  int pCol = 1;
+  int pStr = 0;
+  double loadedTime = timeRemaining; // keep old if not present
+  int gRow = rows - 2;
+  int gCol = cols - 2;
+  int gHP = 0;
+  int gDefeatedFlag = 0;
+
+  // 4) Read line by line
+  string line;
+    while (getline(in, line)) {
+      if (line.size() == 0) {
+        continue;
+      }
+      if (line == "END") {
+        break;
+      }
+
+      istringstream iss(line);
+      string tag;
+      iss >> tag;
+
+      if (tag == "PLAYER") {
+        iss >> pRow >> pCol >> pStr;
+      }
+      else if (tag == "TIME") {
+        iss >> loadedTime;
+      }
+      else if (tag == "GUARD") {
+        iss >> gRow >> gCol >> gHP >> gDefeatedFlag;
+      }
+      else if (tag == "FOOD") {
+        int r, c, val;
+        iss >> r >> c >> val;
+        if (inBounds(r, c)) {
+          // replace whatever is there with a FoodTile
+          if (maze[r][c] != NULL) {
+              delete maze[r][c];
+              maze[r][c] = NULL;
+          }
+          maze[r][c] = new FoodTile(r, c, new Food("Food", val));
+        }
+      }
+      else if (tag == "AWARD") {
+        int r, c;
+        iss >> r >> c;
+        if (inBounds(r, c)) {
+          if (maze[r][c] != NULL) {
+            delete maze[r][c];
+            maze[r][c] = NULL;
+          }
+          // Use simple default award numbers (same each time)
+          double bonus = hardMode ? 12.0 : 10.0;
+          int weaken = hardMode ? 2 : 1;
+          maze[r][c] = new Award(r, c, bonus, weaken);
+        }
+      }
+      else if (tag == "TRAP") {
+        int r, c;
+        iss >> r >> c;
+        if (inBounds(r, c)) {
+          if (maze[r][c] != NULL) {
+            delete maze[r][c];
+            maze[r][c] = NULL;
+          }
+          double penalty = hardMode ? 10.0 : 8.0;
+          double blind = hardMode ? 6.0 : 0.0; // CLI ignores blind
+          maze[r][c] = new Trap(r, c, penalty, blind);
+        }
+      }
+    // else ignore
+    }
+
+  in.close();
+
+  // 5) Place / remove guard based on flag
+  if (gDefeatedFlag == 1) {
+    // defeated: mark state + make that tile floor
+    guardDefeated = true;
+    if (inBounds(gRow, gCol)) {
+        if (maze[gRow][gCol] != NULL) {
+          delete maze[gRow][gCol];
+          maze[gRow][gCol] = NULL;
+        }
+        maze[gRow][gCol] = new FloorTile(gRow, gCol);
+    }
+  } 
+  else {
+    guardDefeated = false;
+    if (inBounds(gRow, gCol)) {
+      if (maze[gRow][gCol] != NULL) {
+        delete maze[gRow][gCol];
+        maze[gRow][gCol] = NULL;
+      }
+      // Recreate guard
+      Guard g(gHP);
+      maze[gRow][gCol] = new GuardTile(gRow, gCol, g);
+    }
+  }
+  // Track guard coords for “weakenGuard”
+  guardRow = gRow;
+  guardCol = gCol;
+
+  // 6) Restore player and timer and reset flags
+  if (inBounds(pRow, pCol)) {
+    playerPtr->setPos(pRow, pCol);
+  }
+  // Strength:
+  // There is no direct setter in your Player (only addStrength),
+  // reset to 0, then add up to desired
+  {
+    // crude reset: move to 0 by subtracting current (if positive)
+    int cur = playerPtr->getStrength();
+    if (cur > 0) {
+        playerPtr->addStrength(-cur);
+    }
+    playerPtr->addStrength(pStr);
+  }
+
+  timeRemaining = loadedTime;
+  gameOver = false;
+  win = false;
+
+  cout << "Game loaded from " << filename << "\n";
+  return true;
 }
 
 // ------------------------------
