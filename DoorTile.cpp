@@ -29,7 +29,7 @@ void Award::trigger(Player& p, GameManager& gm) {
         cout << "Award triggered! +" << timeBonus << " seconds, guard weakened by " << guardWeakenAmount << endl;
 
         // add time
-        gm.timeRemaining += timeBonus;
+        gm.addTime(timeBonus);
 
         // weaken the guard
         gm.weakenGuard(guardWeakenAmount);
@@ -50,8 +50,7 @@ void Trap::trigger(Player& p, GameManager& gm) {
         std::cout << "Trap triggered! -" << timePenalty << " seconds, blinded for " << blindSeconds << " seconds!" << std::endl;
 
         // reduce time
-        gm.timeRemaining -= timePenalty;
-        if (gm.getTime() < 0.0) gm.getTime() = 0.0;
+        gm.addTime(-timePenalty);
 
         // blindness effect would be handled in the GUI layer
 

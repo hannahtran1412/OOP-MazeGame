@@ -24,7 +24,7 @@ public:
     void interact(Player& p, GameManager& gm) override;
     
     // pure virtual trigger method for abstract classes (Award and Trap)
-    virtual void trigger(Player& p, GameManager& gm) = 0;
+    virtual void trigger(Player& p, GameManager& gm) override = 0;
 };
 
 // Award
