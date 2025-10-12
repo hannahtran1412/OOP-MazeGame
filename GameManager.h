@@ -39,6 +39,7 @@ public:
 
   // Level setup
   void initLevel();
+  void spawnDoorsForLevel();
 
   // Input and movement
   void handleInput(char key);

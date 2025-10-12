@@ -33,7 +33,7 @@ void FoodTile::interact(Player& p, GameManager& gm) {
   // replace with floor tile
   gm.replaceWithFloor(getRow(), getCol());
 
-  // ✅ Now safe to print info using stored values
+  // Now safe to print info using stored values
   cout << "Picked up " << foodName << "! Strength increased by " << foodValue << endl;
 
   } 

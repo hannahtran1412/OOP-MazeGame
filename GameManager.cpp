@@ -316,6 +316,12 @@ void GameManager::handleInput(char key) {
   } else if (key == 'q' || key == 'Q') {
     endGameLose(); // or set a quit flag; for now, treat as quit/lose
   }
+  else if (key == 'p' || key == 'P') {
+    saveGame("save.txt");
+  }
+  else if (key == 'l' || key == 'L') {
+    loadGame("save.txt");
+  }
 }
 
 void GameManager::tryMovePlayer(int dr, int dc) {
