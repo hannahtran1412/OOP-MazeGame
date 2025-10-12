@@ -2,7 +2,8 @@
 #define GAMEMANAGER_H
 
 #include <iostream>
-#include <vector>
+#include <vector> //vector
+#include <utility>  //pair
 using namespace std;
 
 // Forward declarations
@@ -30,7 +31,7 @@ private:
   int guardCol;
 
   // List of possible door coordinates
-  std::vector<std::pair<int, int>> doorSlots; 
+  vector<pair<int, int>> doorSlots; 
   int minDoors;
   int maxDoors;
 

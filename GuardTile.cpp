@@ -1,5 +1,5 @@
 #include "GuardTile.h"
-class GameManager; //forward declaration
+#include "GameManager.h" 
 
 GuardTile::GuardTile(int r, int c, Guard g) : MazeTile(r, c), guard(g) {
 }

@@ -3,8 +3,8 @@
 
 #include "MazeTile.h"
 #include "Guard.h"
-#include "GameManager.h"
 
+class GameManager; //forward declare
 
 class GuardTile : public MazeTile {
 protected:
