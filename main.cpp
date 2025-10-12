@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <atomic> // to avoid corruption when 2 bools run at the same time
 using namespace std;
 
 int main() {
@@ -14,6 +15,19 @@ int main() {
 
     GameManager gm(hardMode);
     gm.initLevel();
+    gm.render();
+
+    // timer thread control
+    atomic<bool> running(true);
+    //ticks one per second
+    thread timerThread([&]() {
+      while (running && !gm.isGameOver() && !gm.isWin()) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        gm.update(1.0); // -1s time remaining
+        gm.render();    // refresh display
+      }
+    });
+
 
     // game loop
     while (!gm.isGameOver() && !gm.isWin()) {
@@ -26,14 +40,17 @@ int main() {
 
         gm.handleInput(key);
 
-        // simulate 1 second passing per input (just for demo)
-        gm.update(1.0);
-
         // delay for readability
         this_thread::sleep_for(chrono::milliseconds(200));
     }
 
     gm.render();
     cout << "Game Ended." << endl;
+    return 0;
+
+    running = false;            // 1. Signal thread to stop looping
+    if (timerThread.joinable()) // 2. Check if thread is still active
+    timerThread.join();     // 3. Safely wait for it to finish
+
     return 0;
 }

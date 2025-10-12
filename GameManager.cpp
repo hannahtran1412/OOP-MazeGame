@@ -404,7 +404,7 @@ for (int r = 0; r < rows; r = r + 1) {
 cout << "Strength: " << playerPtr->getStrength()
   << "   Time: " << (int)timeRemaining
   << "   GuardDefeated: " << (guardDefeated ? "yes" : "no")
-  << "   (WASD move, SPACE interact, Q quit)"
+  << "   (WASD move, SPACE / I interact, Q quit)"
   << endl;
 
 if (win) {
