@@ -1,10 +1,13 @@
 #include "Trap.h"
 #include "GameManager.h"
+
+#include <iostream>
 using namespace std;
 
 Trap::Trap(int r, int c, double tPenalty, double blindSec) : DoorTile(r, c) {
   timePenalty = tPenalty;
   blindSeconds = blindSec;
+  triggered = false; // just to  make sure trap doesnt trigger automatically
 }
 
 void Trap::trigger(Player& p, GameManager& gm) {
