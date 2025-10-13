@@ -98,20 +98,13 @@ void GameManager::initLevel() {
     }
   }
 
-  // make border walls and inside floors
-  for (int r = 0; r < rows; r = r + 1) {
-    for (int c = 0; c < cols; c = c + 1) {
-      bool border = false;
-      if (r == 0 || c == 0 || r == rows - 1 || c == cols - 1) {
-        border = true;
-      }
-
-      if (border) {
-        maze[r][c] = new WallTile(r, c);
-      } else {
-        maze[r][c] = new FloorTile(r, c);
-      }
-    }
+  // build from a prefab layout
+  if (!hardMode) {
+    vector<string> layout = getEasyLayout();
+    buildFromLayout(layout);
+  } else {
+    vector<string> layout = getHardLayout();
+    buildFromLayout(layout);
   }
 
   // place player at a simple start
@@ -162,6 +155,129 @@ void GameManager::initLevel() {
   // this will overwrite the floor at those positions with Award/Trap
   // only if the slot is walkable
   spawnDoorsForLevel();
+}
+
+void GameManager::buildFromLayout(const vector<string>& layout) {
+  // Safety: match rows/cols
+  if ((int)layout.size() != rows) {
+    cout << "Layout row count does not match GameManager rows.\n";
+    return;
+  }
+  for (int r = 0; r < rows; r = r + 1) {
+    if ((int)layout[r].size() != cols) {
+      cout << "Layout col count does not match GameManager cols at row " << r << ".\n";
+      return;
+    }
+  }
+
+  // Clear guard position
+  guardRow = -1;
+  guardCol = -1;
+
+  // Clear previous door slots
+  doorSlots.clear();
+
+  // Build tiles from characters
+  //  '#' = Wall, '.' = Floor, 'P' = Player, 'G' = Guard,'F' = Food
+  // 'A' = Award, 'T' = Trap, 'D' = Door (record slot; spawnDoorsForLevel() will decide A/T later)
+  for (int r = 0; r < rows; r = r + 1) {
+    for (int c = 0; c < cols; c = c + 1) {
+      char ch = layout[r][c];
+
+      // delete old tile
+      if (maze[r][c] != NULL) {
+        delete maze[r][c];
+        maze[r][c] = NULL;
+      }
+
+      if (ch == '#') {
+        maze[r][c] = new WallTile(r, c);
+      } else if (ch == '.') {
+        maze[r][c] = new FloorTile(r, c);
+      } else if (ch == 'P') {
+        maze[r][c] = new FloorTile(r, c);
+        // set player start here
+        playerPtr->setPos(r, c);
+      } else if (ch == 'G') {
+        maze[r][c] = new FloorTile(r, c);
+        guardRow = r;
+        guardCol = c;
+      } else if (ch == 'F') {
+        // place food value (2)
+        maze[r][c] = new FoodTile(r, c, new Food("Food", 2));
+      } else if (ch == 'A') {
+        // place an Award (values tuned by difficulty)
+        double bonus = hardMode ? 12.0 : 10.0;
+        int weaken = hardMode ? 2 : 1;
+        maze[r][c] = new Award(r, c, bonus, weaken);
+      } else if (ch == 'T') {
+        double penalty = hardMode ? 10.0 : 8.0;
+        double blind = hardMode ? 6.0 : 0.0; // ignored in CLI
+        maze[r][c] = new Trap(r, c, penalty, blind);
+      } else if (ch == 'D') {
+        // put a floor for now, and record the slot;
+        // spawnDoorsForLevel() will convert some to Award/Trap
+        maze[r][c] = new FloorTile(r, c);
+        doorSlots.push_back(make_pair(r, c));
+      } else {
+        // unknown: default to floor
+        maze[r][c] = new FloorTile(r, c);
+      }
+    }
+  }
+
+  // If layout specified guard position, place guard now
+  if (inBounds(guardRow, guardCol)) {
+    int hp = hardMode ? 12 : 8;
+    // Replace whatever is there with GuardTile
+    if (maze[guardRow][guardCol] != NULL) {
+      delete maze[guardRow][guardCol];
+      maze[guardRow][guardCol] = NULL;
+    }
+    Guard g(hp);
+    maze[guardRow][guardCol] = new GuardTile(guardRow, guardCol, g);
+  }
+}
+
+vector<string> GameManager::getEasyLayout() const {
+  // 10x10
+  vector<string> L;
+
+  L.push_back("##########");
+  L.push_back("#P..#....#");
+  L.push_back("#.#.#.##.#");
+  L.push_back("#.#...#..#");
+  L.push_back("#.###.#F.#");
+  L.push_back("#...#.#..#");
+  L.push_back("###.#.##.#");
+  L.push_back("#..D...#G#");
+  L.push_back("#..F#..D.#");
+  L.push_back("##########");
+
+  return L;
+}
+
+vector<string> GameManager::getHardLayout() const {
+  // 15x15
+  vector<string> L;
+
+  L.push_back("###############");
+  L.push_back("#P..#....#..F.#");
+  L.push_back("#.#.#.##.#.#..#");
+  L.push_back("#.#...#..#.#D.#");
+  L.push_back("#.###.#F.#.#..#");
+  L.push_back("#...#.#..#.#..#");
+  L.push_back("###.#.##.#.##.#");
+  L.push_back("#..D...#..#...#");
+  L.push_back("#..#.#.##.#.###");
+  L.push_back("#F.#.#..#.#...#");
+  L.push_back("#..#D#..#.#.#.#");
+  L.push_back("#.##.#.##.#.#.#");
+  L.push_back("#....#....#.#G#");
+  L.push_back("#..F#..D..#...#");
+  L.push_back("###############");
+
+  return L;
 }
 
 // ------------------------------
@@ -552,7 +668,7 @@ void GameManager::endGameLose() {
 // ------------------------------
 // Save / Load (to be implemented later)
 // ------------------------------
-void GameManager::saveGame(const std::string& filename) const {
+void GameManager::saveGame(const string& filename) const {
   // Open file for writing (overwrite)
   ofstream out;
   out.open(filename.c_str(), ios::out);
@@ -644,7 +760,7 @@ void GameManager::saveGame(const std::string& filename) const {
   cout << "Game saved to " << filename << "\n";
 }
 
-bool GameManager::loadGame(const std::string& filename) {
+bool GameManager::loadGame(const string& filename) {
   ifstream in;
   in.open(filename.c_str(), ios::in);
   if (!in.is_open()) {

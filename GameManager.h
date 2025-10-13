@@ -42,6 +42,13 @@ public:
   void initLevel();
   void spawnDoorsForLevel();
 
+  // Build tiles from ASCII layout
+  void buildFromLayout(const vector<string>& layout);
+
+  // Get prefab layouts for easy and hard mode
+  vector<string> getEasyLayout() const;
+  vector<string> getHardLayout() const;
+
   // Input and movement
   void handleInput(char key);
   void tryMovePlayer(int dr, int dc); //dr,dc = delta row, delta column
@@ -71,8 +78,8 @@ public:
   void endGameLose();
 
   // Save / load using txt file
-  void saveGame(const std::string& filename) const;
-  bool loadGame(const std::string& filename);
+  void saveGame(const string& filename) const;
+  bool loadGame(const string& filename);
 
   // getters
   int getRows() const;
