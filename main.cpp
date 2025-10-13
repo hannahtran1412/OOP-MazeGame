@@ -3,13 +3,26 @@
 #include <chrono>
 #include <thread>
 #include <atomic> // to avoid corruption when 2 bools run at the same time
+#include <limits> // to valid input
 using namespace std;
 
 int main() {
     // Ask difficulty
     char mode;
-    cout << "Choose mode: (E)asy or (H)ard: ";
-    cin >> mode;
+
+    // check if input is valid
+    bool validInput = false;
+    while (!validInput) {
+        cout << "Choose mode: (E)asy or (H)ard: ";
+        cin >> mode;
+        if (mode == 'E' || mode == 'e' || mode == 'H' || mode == 'h') {
+            validInput = true;
+        } else {
+            cout << "Invalid input. Please press 'E' for Easy or 'H' for Hard." << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+    }
 
     bool hardMode = (mode == 'H' || mode == 'h');
 
