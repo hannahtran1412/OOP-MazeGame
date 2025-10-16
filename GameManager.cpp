@@ -106,10 +106,10 @@ void GameManager::initLevel() {
     vector<string> layout = getHardLayout();
     buildFromLayout(layout);
   }
-
-  // place player at a simple start
-  playerPtr->setPos(1, 1);   
-
+  int hp = hardMode ? 12 : 8;
+  if (guardRow == -1 || guardCol == -1) {
+    placeGuard(rows - 2, cols - 2, hp);
+  }
     // place foods
   if (hardMode) {
     // scatter a few foods randomly (values 2..4)
@@ -139,16 +139,6 @@ void GameManager::initLevel() {
     placeFood(3, 3, 2);
     placeFood(4, 4, 2);
   }
-
-  // place guard near bottom-right
-  int hp = 0;
-  if (hardMode) {
-    hp = 12;
-  } 
-  else {
-    hp = 8;
-  }
-  placeGuard(rows - 2, cols - 2, hp);
 
   // spawn doors based on difficulty
   // (fixed slots; place a random count in range)
@@ -284,59 +274,31 @@ vector<string> GameManager::getHardLayout() const {
 // DOOR SPAWNING (range between minDoors..maxDoors)
 // ------------------------------
 void GameManager::spawnDoorsForLevel() {
-  // reset slots list
-  doorSlots.clear();
-
-  // choose range and slot positions
-  if (hardMode) {
-    minDoors = 3;
-    maxDoors = 5;
-
-    doorSlots.push_back(make_pair(2, 7));
-    doorSlots.push_back(make_pair(3, 11));
-    doorSlots.push_back(make_pair(4, 4));
-    doorSlots.push_back(make_pair(6, 9));
-    doorSlots.push_back(make_pair(8, 5));
-    doorSlots.push_back(make_pair(10, 10));
-    doorSlots.push_back(make_pair(12, 3));
-    doorSlots.push_back(make_pair(13, 12));
-  } 
-  else {
-    minDoors = 2;
-    maxDoors = 3;
-
-    doorSlots.push_back(make_pair(2, 5));
-    doorSlots.push_back(make_pair(3, 7));
-    doorSlots.push_back(make_pair(5, 3));
-    doorSlots.push_back(make_pair(6, 8));
-    doorSlots.push_back(make_pair(7, 5));
+  // Use the 'D' slots gathered from the ASCII layout
+  if (doorSlots.empty()) {
+    return; // nothing to place
   }
 
-  // pick how many doors to place
-  int countRange = (maxDoors - minDoors) + 1;
-  int toPlace = minDoors;
-  if (countRange > 1) {
-    int add = rand() % countRange; // 0..(range-1)
-    toPlace = minDoors + add;
+  // Decide how many doors to convert based on difficulty, clamped to available slots
+  int maxPossible = static_cast<int>(doorSlots.size());
+  int minDoorsLocal = hardMode ? std::min(3, maxPossible) : std::min(2, maxPossible);
+  int maxDoorsLocal = hardMode ? std::min(5, maxPossible) : std::min(3, maxPossible);
+  if (maxDoorsLocal < minDoorsLocal) {
+    maxDoorsLocal = minDoorsLocal;
   }
 
-  // mark which slots are used (so we don't duplicate)
+  int range = (maxDoorsLocal - minDoorsLocal + 1);
+  int toPlace = minDoorsLocal + (range > 1 ? rand() % range : 0);
+
+  // Randomly pick distinct slots from doorSlots
   vector<bool> used(doorSlots.size(), false);
-
   int placed = 0;
   int attempts = 0;
 
   while (placed < toPlace && attempts < 500) {
     attempts = attempts + 1;
 
-    if (doorSlots.size() == 0) {
-      break;
-    }
-
-    int idx = rand() % (int)doorSlots.size();
-    if (idx < 0 || idx >= (int)doorSlots.size()) {
-      continue;
-    }
+    int idx = rand() % static_cast<int>(doorSlots.size());
     if (used[idx]) {
       continue;
     }
@@ -345,67 +307,37 @@ void GameManager::spawnDoorsForLevel() {
     int c = doorSlots[idx].second;
 
     if (!inBounds(r, c)) {
+      used[idx] = true;
       continue;
     }
 
     MazeTile* t = tileAt(r, c);
-    if (t == NULL) {
+    if (t == NULL || !t->isWalkable()) {
+      used[idx] = true;
       continue;
     }
 
-    if (!t->isWalkable()) {
-      continue;
-    }
+    // Decide Award vs Trap
+    bool makeAward = (rand() % 2 == 0);
 
-    // flip a coin: award or trap
-    bool makeAward = false;
-    int coin = rand() % 2; // 0 or 1
-    if (coin == 0) {
-      makeAward = true;
-    } else {
-      makeAward = false;
+    if (maze[r][c] != NULL) {
+      delete maze[r][c];
+      maze[r][c] = NULL;
     }
 
     if (makeAward) {
-      double bonus = 0.0;
-      int weaken = 0;
-      if (hardMode) {
-        bonus = 12.0;
-        weaken = 2;
-      } 
-      else {
-        bonus = 10.0;
-        weaken = 1;
-      }
-      // replace floor at (r,c) with Award
-      if (maze[r][c] != NULL) {
-        delete maze[r][c];
-        maze[r][c] = NULL;
-      }
+      double bonus = hardMode ? 12.0 : 10.0;
+      int weaken   = hardMode ? 2    : 1;
       maze[r][c] = new Award(r, c, bonus, weaken);
-    } 
-    else {
-      double penalty = 0.0;
-      double blind = 0.0;
-      if (hardMode) {
-        penalty = 10.0;
-        blind = 6.0; // ignored in CLI, used later in GUI
-      } 
-      else {
-        penalty = 8.0;
-        blind = 0.0;
-      }
-      // replace floor at (r,c) with Trap
-      if (maze[r][c] != NULL) {
-        delete maze[r][c];
-        maze[r][c] = NULL;
-      }
+    } else {
+      double penalty = hardMode ? 10.0 : 8.0;
+      double blind   = hardMode ? 6.0  : 0.0; // CLI ignores blind
       maze[r][c] = new Trap(r, c, penalty, blind);
     }
 
     used[idx] = true;
     placed = placed + 1;
-}
+  }
 }
 
 // ------------------------------
