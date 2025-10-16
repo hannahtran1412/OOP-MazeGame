@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build raylib project",
+      "type": "shell",
+      "command": "g++",
+      "args": [
+        "-g",
+        "MainMenu.cpp",
+        "main.cpp",
+        "GameManager.cpp",
+        "Award.cpp",
+        "DoorTile.cpp",
+        "FloorTile.cpp",
+        "Food.cpp",
+        "FoodTile.cpp",
+        "Guard.cpp",
+        "GuardTile.cpp",
+        "MazeTile.cpp",
+        "Player.cpp",
+        "Trap.cpp",
+        "WallTile.cpp",
+        "-o",
+        "game.exe",
+        "-I",
+        "C:/msys64/mingw64/include",
+        "-L",
+        "C:/msys64/mingw64/lib",
+        "-lraylib",
+        "-lopengl32",
+        "-lgdi32",
+        "-lwinmm"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
