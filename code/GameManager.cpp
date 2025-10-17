@@ -126,7 +126,7 @@ void GameManager::initLevel() {
     MazeTile* t = tileAt(rr, cc);
     if (t != NULL) {
       if (t->isWalkable()) {
-        int val = 2 + (rand() % 3); // 2,3,4
+        int val = 2 + (rand() % 4); // 2,3,4,5
         placeFood(rr, cc, val);
         placed = placed + 1;
       }
