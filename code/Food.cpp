@@ -17,11 +17,7 @@ string Food::getName() {
 
 void Food::use(Player &p) {
   p.addStrength(nutritionValue);
-  cout << "Collected " << name << "! Strength increased by " << nutritionValue << endl;
+  //cout << "Collected " << name << "! Strength increased by " << nutritionValue << endl;
 }
 
-/*
-Tomato::Tomato() : Food("Tomato", 2) {}
-Banana::Banana() : Food("Banana", 1) {}
-Fish::Fish() : Food("Fish", 3) {}
-*/
+

@@ -25,6 +25,7 @@ private:
   bool gameOver;
   bool win;
   bool guardDefeated;
+  double blindTimer = 0.0;   // > 0 while blinded
 
   // guard's location so we can weaken it (Award)
   int guardRow;
@@ -59,6 +60,8 @@ public:
   // Timer and game checks
   void update(double dt);
   void checkWinLose();
+  double getBlindTime() const { return blindTimer; }
+  void applyBlind(double seconds) { if (seconds > 0) blindTimer = seconds; }
 
   // Helpers
   bool inBounds(int r, int c) const;

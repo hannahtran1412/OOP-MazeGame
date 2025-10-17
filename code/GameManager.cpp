@@ -135,9 +135,9 @@ void GameManager::initLevel() {
   } 
   else {
     // easy mode: put foods roughly along a gentle path
-    placeFood(2, 2, 2);
-    placeFood(3, 3, 2);
-    placeFood(4, 4, 2);
+    //placeFood(2, 2, 2);
+    placeFood(4, 4, 3);
+    placeFood(3, 3, 1); // value = 1 barely useful
   }
 
   // spawn doors based on difficulty
@@ -201,8 +201,8 @@ void GameManager::buildFromLayout(const vector<string>& layout) {
         int weaken = hardMode ? 2 : 1;
         maze[r][c] = new Award(r, c, bonus, weaken);
       } else if (ch == 'T') {
-        double penalty = hardMode ? 10.0 : 8.0;
-        double blind = hardMode ? 6.0 : 0.0; // ignored in CLI
+        double penalty = hardMode ? 20.0 : 10.0;
+        double blind = hardMode ? 8.0 : 8.0; // ignored in CLI
         maze[r][c] = new Trap(r, c, penalty, blind);
       } else if (ch == 'D') {
         // put a floor for now, and record the slot;
@@ -271,71 +271,54 @@ vector<string> GameManager::getHardLayout() const {
 }
 
 // ------------------------------
-// DOOR SPAWNING (range between minDoors..maxDoors)
+// DOOR SPAWNING (RANDOM ANYWHERE, EASY: 2-3, HARD: 3-5)
 // ------------------------------
 void GameManager::spawnDoorsForLevel() {
-  // Use the 'D' slots gathered from the ASCII layout
-  if (doorSlots.empty()) {
-    return; // nothing to place
-  }
+  // how many doors?
+  int minDoorsLocal = hardMode ? 3 : 2;
+  int maxDoorsLocal = hardMode ? 5 : 3;
+  if (maxDoorsLocal < minDoorsLocal) maxDoorsLocal = minDoorsLocal;
 
-  // Decide how many doors to convert based on difficulty, clamped to available slots
-  int maxPossible = static_cast<int>(doorSlots.size());
-  int minDoorsLocal = hardMode ? std::min(3, maxPossible) : std::min(2, maxPossible);
-  int maxDoorsLocal = hardMode ? std::min(5, maxPossible) : std::min(3, maxPossible);
-  if (maxDoorsLocal < minDoorsLocal) {
-    maxDoorsLocal = minDoorsLocal;
-  }
-
-  int range = (maxDoorsLocal - minDoorsLocal + 1);
+  int range   = (maxDoorsLocal - minDoorsLocal + 1);
   int toPlace = minDoorsLocal + (range > 1 ? rand() % range : 0);
 
-  // Randomly pick distinct slots from doorSlots
-  vector<bool> used(doorSlots.size(), false);
-  int placed = 0;
+  int placed   = 0;
   int attempts = 0;
 
-  while (placed < toPlace && attempts < 500) {
+  // place doors on random walkable floors (not walls, not guard, not player)
+  while (placed < toPlace && attempts < 2000) {
     attempts = attempts + 1;
 
-    int idx = rand() % static_cast<int>(doorSlots.size());
-    if (used[idx]) {
-      continue;
-    }
+    int r = 1 + (rand() % (rows - 2)); // avoid borders
+    int c = 1 + (rand() % (cols - 2));
 
-    int r = doorSlots[idx].first;
-    int c = doorSlots[idx].second;
-
-    if (!inBounds(r, c)) {
-      used[idx] = true;
+    // skip the player's current cell
+    if (playerPtr && playerPtr->getRow() == r && playerPtr->getCol() == c) {
       continue;
     }
 
     MazeTile* t = tileAt(r, c);
-    if (t == NULL || !t->isWalkable()) {
-      used[idx] = true;
-      continue;
-    }
+    if (t == NULL) continue;
+    if (!t->isWalkable()) continue;                 // no walls
+    if (dynamic_cast<GuardTile*>(t) != NULL) continue; // don't overwrite guard
 
-    // Decide Award vs Trap
+    // flip a coin: Award or Trap
     bool makeAward = (rand() % 2 == 0);
 
-    if (maze[r][c] != NULL) {
-      delete maze[r][c];
-      maze[r][c] = NULL;
-    }
+    // replace current tile with door (Award or Trap)
+    delete maze[r][c];
+    maze[r][c] = NULL;
 
     if (makeAward) {
       double bonus = hardMode ? 12.0 : 10.0;
       int weaken   = hardMode ? 2    : 1;
-      maze[r][c] = new Award(r, c, bonus, weaken);
+      maze[r][c]   = new Award(r, c, bonus, weaken);
     } else {
-      double penalty = hardMode ? 10.0 : 8.0;
-      double blind   = hardMode ? 6.0  : 0.0; // CLI ignores blind
-      maze[r][c] = new Trap(r, c, penalty, blind);
+      double penalty = hardMode ? 20.0 : 10.0; // you set 20 hard / 10 easy above
+      double blind   = 8.0;                    // blackout seconds (GUI uses this)
+      maze[r][c]     = new Trap(r, c, penalty, blind);
     }
 
-    used[idx] = true;
     placed = placed + 1;
   }
 }
@@ -476,6 +459,11 @@ void GameManager::update(double dt) {
   if (timeRemaining <= 0.0) {
     timeRemaining = 0.0;
     gameOver = true;
+  }
+
+  if (blindTimer > 0.0) {
+    blindTimer = blindTimer - dt;
+    if (blindTimer < 0.0) blindTimer = 0.0;
   }
 
   checkWinLose();

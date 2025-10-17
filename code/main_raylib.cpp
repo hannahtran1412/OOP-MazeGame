@@ -92,7 +92,7 @@ static void DrawGame(GameManager& gm, int cell, int margin) {
                 DrawInCell(gTex.floor, r, c, cell, margin);
             }
 
-            // door? (Award or Trap both subclass DoorTile)
+            // door (Award or Trap both subclass DoorTile)
             if (auto door = dynamic_cast<DoorTile*>(t)) {
                 // show closed until triggered, then open
                 if (door->isTriggered()) {
@@ -102,7 +102,7 @@ static void DrawGame(GameManager& gm, int cell, int margin) {
                 }
             }
 
-            // food?
+            // food
             if (auto ft = dynamic_cast<FoodTile*>(t)) {
                 Food* f = ft->getFood();
                 if (f) {
@@ -118,14 +118,14 @@ static void DrawGame(GameManager& gm, int cell, int margin) {
                 }
             }
 
-            // guard?
+            // guard
             if (dynamic_cast<GuardTile*>(t)) {
                 DrawInCell(gTex.guard, r, c, cell, margin);
             }
 
             // (optional) subtle grid lines
-            Color grid = Color{60,60,70,255};
-            DrawRectangleLines(margin + c*cell, margin + r*cell, cell, cell, grid);
+            //Color grid = Color{60,60,70,255};
+            //DrawRectangleLines(margin + c*cell, margin + r*cell, cell, cell, grid);
         }
     }
 
@@ -173,13 +173,22 @@ int main() {
         ClearBackground(Color{18,18,24,255});
         DrawGame(gm, cellSize, margin);
 
-        // HUD (no progress bar, just text)
+        // HUD just text
         int hudY = margin + rows*cellSize + 12;
         DrawText(TextFormat("Strength: %d", gm.getPlayer().getStrength()), margin, hudY, 22, RAYWHITE);
         DrawText(TextFormat("Time: %d", (int)gm.getTimeRemaining()), margin + 240, hudY, 22, RAYWHITE);
         DrawText("(WASD move, SPACE/I interact, ESC quit)", margin, hudY+26, 16, Color{160,160,175,255});
 
-        // end banner
+        // BLIND OVERLAY (draw if trap effect active) 
+        if (gm.getBlindTime() > 0.0) {
+            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), BLACK);
+            const char* msg = "BLINDED!";   
+            int fs = 40;
+            int w = MeasureText(msg, fs);
+            DrawText(msg, GetScreenWidth()/2 - w/2, GetScreenHeight()/2 - 20, fs, RAYWHITE);
+        }
+    
+        // win/lose screen
         if (gm.isWin() || gm.isGameOver()) {
             DrawRectangle(0,0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.5f));
             const char* line = gm.isWin() ? "YOU WIN!" : "YOU LOSE!";
@@ -196,6 +205,7 @@ int main() {
 
         // allow any key to exit after end
         if ((gm.isGameOver() || gm.isWin()) && GetKeyPressed() != 0) break;
+    
     }
 
     UnloadAllTextures();

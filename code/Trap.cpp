@@ -19,6 +19,7 @@ void Trap::trigger(Player& p, GameManager& gm) {
     gm.addTime(-timePenalty);
 
     // blindness effect would be handled in the GUI layer
+    gm.applyBlind(blindSeconds);   //start GUI blindness countdown
 
     // replace with floor tile
     //gm.replaceWithFloor(getRow(), getCol());
