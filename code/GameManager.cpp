@@ -860,3 +860,4 @@ double GameManager::getTimeRemaining() const { return timeRemaining; }
 bool GameManager::isGameOver() const { return gameOver; }
 bool GameManager::isWin() const { return win; }
 Player& GameManager::getPlayer() { return *playerPtr; }
+const Player& GameManager::getPlayer() const{ return *playerPtr; }

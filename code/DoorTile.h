@@ -25,6 +25,9 @@ public:
   
   // pure virtual trigger method for abstract classes (Award and Trap)
   virtual void trigger(Player& p, GameManager& gm) override = 0;
+
+  //getter for trigger
+  bool isTriggered() const { return triggered; }
 };
 
 #endif

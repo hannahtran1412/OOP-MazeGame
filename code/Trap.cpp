@@ -21,6 +21,6 @@ void Trap::trigger(Player& p, GameManager& gm) {
     // blindness effect would be handled in the GUI layer
 
     // replace with floor tile
-    gm.replaceWithFloor(getRow(), getCol());
+    //gm.replaceWithFloor(getRow(), getCol());
   }
 }

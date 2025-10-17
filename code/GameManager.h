@@ -90,6 +90,7 @@ public:
 
   // Access to player for tiles
   Player& getPlayer();
+  const Player& getPlayer() const;
 
   ~GameManager();
 };

@@ -22,6 +22,6 @@ void Award::trigger(Player& p, GameManager& gm) {
     gm.weakenGuard(guardWeakenAmount);
 
     // replace with floor tile
-    gm.replaceWithFloor(getRow(), getCol());
+    //gm.replaceWithFloor(getRow(), getCol());
   }
 }
