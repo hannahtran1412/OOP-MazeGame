@@ -21,6 +21,9 @@ int Player::getStrength() const {
 }
 
 void Player::setPos(int r, int c) {
+    // set position to zero if negative (edge case test)
+    if (r < 0) r = 0;
+    if (c < 0) c = 0;
     this->row = r;
     this->col = c;
 }
