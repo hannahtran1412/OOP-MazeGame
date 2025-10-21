@@ -14,18 +14,27 @@ Award::Award(int r, int c, double tBonus, int weaken)
 
 void Award::trigger(Player& p, GameManager& gm) {
   // only trigger once
-  if (!triggered) {    // if the award hasn't been triggered yet
-    triggered = true;  // mark as triggered
-    cout << "Award triggered! +" << timeBonus << " seconds, guard weakened by "
-         << guardWeakenAmount << endl;
+  try{
+    if (!triggered) {    // if the award hasn't been triggered yet
+      triggered = true;  // mark as triggered
+      cout << "Award triggered! +" << timeBonus << " seconds, guard weakened by "<< guardWeakenAmount << endl;
 
-    // add time
-    gm.addTime(timeBonus);
+      // add time
+      gm.addTime(timeBonus);
+      // weaken the guard
+      gm.weakenGuard(guardWeakenAmount);
 
-    // weaken the guard
-    gm.weakenGuard(guardWeakenAmount);
+      // check if award effects actually applied
+      if (timeBonus <= 0 || guardWeakenAmount <= 0) {
+        throw runtime_error("Award failed to apply bonus or weakening effect.");
+      }
 
-    // replace with floor tile
-    // gm.replaceWithFloor(getRow(), getCol());
+      // replace with floor tile
+      // gm.replaceWithFloor(getRow(), getCol());
+    }
+  }
+
+  catch (const runtime_error& e) {
+    cout << "Award error: " << e.what() << endl;
   }
 }

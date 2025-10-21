@@ -6,29 +6,29 @@
 enum class GameState { MAIN_MENU, PLAYING, PAUSED, GAME_OVER };
 
 class Menu {
-private:
-    Rectangle easyButton;
-    Rectangle hardButton;
-    Rectangle quitButton;
+ private:
+  Rectangle easyButton;
+  Rectangle hardButton;
+  Rectangle quitButton;
 
-    Rectangle pauseButton;
-    Rectangle continueButton;
-    Rectangle quitPauseButton;
+  Rectangle pauseButton;
+  Rectangle continueButton;
+  Rectangle quitPauseButton;
 
-public:
-    Menu(int screenW, int screenH);
+ public:
+  Menu(int screenW, int screenH);
 
-    void DrawMainMenu();
+  void DrawMainMenu();
 
-    void HandleMainMenuInput(bool& hardMode, GameState& state, bool& shouldExit);
+  void HandleMainMenuInput(bool& hardMode, GameState& state, bool& shouldExit);
 
-    void DrawPauseButton();
+  void DrawPauseButton();
 
-    void HandlePauseButtonClick(GameState& state);
+  void HandlePauseButtonClick(GameState& state);
 
-    void DrawPauseMenu();
+  void DrawPauseMenu();
 
-    void HandlePauseMenuInput(GameState& state, bool& shouldExit);
+  void HandlePauseMenuInput(GameState& state, bool& shouldExit);
 };
 
 #endif

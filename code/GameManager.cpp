@@ -20,7 +20,11 @@
 //file read and write
 #include <fstream>   // std::ifstream, std::ofstream
 #include <sstream>   // std::istringstream
+
+#include <stdexcept>  // runtime_error
+
 using namespace std;
+
 
 // ------------------------------
 // Constructor / Destructor
@@ -194,7 +198,7 @@ void GameManager::buildFromLayout(const vector<string>& layout) {
         guardCol = c;
       } else if (ch == 'F') {
         // place food value (2)
-        maze[r][c] = new FoodTile(r, c, new Food("Food", 2));
+        maze[r][c] = new FoodTile(r, c, new Food("Healing Potion", 2));
       } else if (ch == 'A') {
         // place an Award (values tuned by difficulty)
         double bonus = hardMode ? 12.0 : 10.0;
@@ -516,17 +520,17 @@ void GameManager::placeFood(int r, int c, int val) {
     maze[r][c] = NULL;
   }
 
-  // simple name based on value (optional)
-  string name = "Food";
+  // food values and names
+  string name;
   if (val >= 5) {
-    name = "Banana";
+    name = "Triple Essence";
   } 
   else {
     if (val >= 3) {
-        name = "Fish";
+        name = "Fire Elixir";
     }
     else {
-      name = "Tomato";
+      name = "Healing Potion";
     }
   }
 
@@ -586,16 +590,18 @@ void GameManager::endGameLose() {
 }
 
 // ------------------------------
-// Save / Load (to be implemented later)
+// Save / Load 
 // ------------------------------
 void GameManager::saveGame(const string& filename) const {
-  // Open file for writing (overwrite)
+  try {
+  // create a file stream (used to write data into a file)
   ofstream out;
+  // Open file for writing (overwrite)
   out.open(filename.c_str(), ios::out);
   if (!out.is_open()) {
-    cout << "Could not open save file.\n";
-    return;
+    throw runtime_error("Could not open save file.");
   }
+
 
   // Save basic state (player, time)
   // PLAYER <row> <col> <strength>
@@ -675,17 +681,29 @@ void GameManager::saveGame(const string& filename) const {
     }
   }
 
+  // end of file
   out << "END\n";
+  // close file after saving
   out.close();
   cout << "Game saved to " << filename << "\n";
+  } 
+
+  catch (const runtime_error& e) {
+  // if something goes wrong, show the message we threw earlier
+  cout << "Save error: " << e.what() << "\n";
+  return;  // saveGame is void
+  }
+
 }
 
 bool GameManager::loadGame(const string& filename) {
+  try {
+  // create a file stream (used to read data from a file)
   ifstream in;
+  //open file for read
   in.open(filename.c_str(), ios::in);
   if (!in.is_open()) {
-  cout << "Could not open save file to load.\n";
-  return false;
+    throw runtime_error("Could not open save file to load.");
   }
 
   // 1) Wipe current board tiles to avoid leaks
@@ -837,6 +855,13 @@ bool GameManager::loadGame(const string& filename) {
 
   cout << "Game loaded from " << filename << "\n";
   return true;
+  }
+
+  catch (const runtime_error& e) {
+  // if something went wrong (like file not found), show message
+  cout << "Load error: " << e.what() << "\n";
+  return false;
+  }
 }
 
 // ------------------------------
