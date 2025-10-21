@@ -177,25 +177,11 @@ void testSaveLoadGame() {
     string saveFile = "test_save.txt";
     gm.saveGame(saveFile);
 
-    try { 
-        gm.saveGame(saveFile); 
-    }
-    catch (const exception& e) { 
-        assert(false && "Save threw exception!"); 
-    }
-
     // 2. Create new GameManager and load the saved state
     GameManager gmLoad(false);
     gmLoad.initLevel();
     bool loadSuccess = false;
-
-    try { 
-        loadSuccess = gmLoad.loadGame(saveFile); 
-    }
-    catch (const std::exception& e) { 
-        assert(false && "Load threw exception!"); 
-    }
-
+    loadSuccess = gmLoad.loadGame(saveFile); 
     assert(loadSuccess);
 
     Player& loadedPlayer = gmLoad.getPlayer();

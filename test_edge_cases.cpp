@@ -64,13 +64,8 @@ void testFileLoadNonexistent() {
   GameManager gm(false);
   bool loaded = false;
 
-  try { 
-    loaded = gm.loadGame("does_not_exist.txt"); 
-  }
-  catch (...) { 
-    loaded = false; 
-  }
-
+  loaded = gm.loadGame("does_not_exist.txt"); 
+  
   assert(!loaded);
 
   cout << "PASSED\n";
