@@ -19,13 +19,13 @@ Menu::Menu(int screenW, int screenH) {
 void Menu::DrawMainMenu() {
     DrawText("Maze Game", GetScreenWidth() / 2 - MeasureText("Maze Game", 40) / 2, 50, 40, RAYWHITE);
 
-    DrawRectangleRec(easyButton, BLUE);
+    DrawRectangleRec(easyButton, DARKGRAY);
     DrawText("Easy", (int)easyButton.x + 70, (int)easyButton.y + 10, 30, WHITE);
 
-    DrawRectangleRec(hardButton, BLUE);
+    DrawRectangleRec(hardButton, DARKGRAY);
     DrawText("Hard", (int)hardButton.x + 70, (int)hardButton.y + 10, 30, WHITE);
 
-    DrawRectangleRec(quitButton, BLUE);
+    DrawRectangleRec(quitButton, DARKGRAY);
     DrawText("Quit", (int)quitButton.x + 70, (int)quitButton.y + 10, 30, WHITE);
 }
 
@@ -45,7 +45,7 @@ void Menu::HandleMainMenuInput(bool& hardMode, GameState& state, bool& shouldExi
 }
 
 void Menu::DrawPauseButton() {
-    DrawRectangleRec(pauseButton, Color{80, 80, 80, 255});
+    DrawRectangleRec(pauseButton, Color{255, 255, 255, 255});
     DrawText("Pause", (int)pauseButton.x + 5, (int)pauseButton.y + 5, 20, BLACK);
 }
 
@@ -60,14 +60,14 @@ void Menu::HandlePauseButtonClick(GameState& state) {
 
 void Menu::DrawPauseMenu() {
     // Draw pause menu background in top-left corner
-    DrawRectangle(0, 0, 220, 100, Color{0, 0, 128, 100});
+    DrawRectangle(0, 0, 220, 100, Color{0, 0, 128, 180}); // Navy blue with transparency
     DrawText("Paused", 10, 10, 40, RAYWHITE);
 
     // Draw centered buttons
-    DrawRectangleRec(continueButton, Color{0, 128, 128, 255}); 
+    DrawRectangleRec(continueButton, Color{0, 0, 128, 180}); 
     DrawText("Continue", (int)continueButton.x + 30, (int)continueButton.y + 10, 30, WHITE);
 
-    DrawRectangleRec(quitPauseButton, Color{0, 128, 128, 255}); 
+    DrawRectangleRec(quitPauseButton, Color{0, 0, 128, 180}); 
     DrawText("Quit", (int)quitPauseButton.x + 70, (int)quitPauseButton.y + 10, 30, WHITE);
 }
 
