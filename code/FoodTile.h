@@ -1,23 +1,25 @@
+// MazeTile subclass
+// Holds a Food object, allows player interaction to consume it
 #ifndef FOODTILE_H
 #define FOODTILE_H
 
-#include "MazeTile.h"
 #include "Food.h"
+#include "MazeTile.h"
 
 class Player;
 class GameManager;
 
 class FoodTile : public MazeTile {
-private:
-  Food* food;
+ private:
+  Food* food;  // pointer to food on this tile
 
-public:
+ public:
   // constructor
   FoodTile(int r, int c, Food* f);
 
   // destructor
   ~FoodTile();
-  
+
   // override pure virtual methods from MazeTile
   bool isWalkable() const override;
 

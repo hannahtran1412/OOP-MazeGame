@@ -1,3 +1,5 @@
+// Abstract subclass of MazeTile
+// Triggers a hidden mechanism automatically when stepped on
 #ifndef DOORTILE_H
 #define DOORTILE_H
 
@@ -7,10 +9,10 @@ class Player;
 class GameManager;
 
 class DoorTile : public MazeTile {
-protected:
-  bool triggered; // check if user already interacted with this door
+ protected:
+  bool triggered;  // check if user already interacted with this door
 
-public:
+ public:
   // constructor
   DoorTile(int r, int c);
 
@@ -22,11 +24,11 @@ public:
 
   // Interaction key does nothing on doors; they trigger automatically
   void interact(Player& p, GameManager& gm) override;
-  
+
   // pure virtual trigger method for abstract classes (Award and Trap)
   virtual void trigger(Player& p, GameManager& gm) override = 0;
 
-  //getter for trigger
+  // getter for trigger
   bool isTriggered() const { return triggered; }
 };
 

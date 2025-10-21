@@ -1,3 +1,5 @@
+// Base class for all maze tiles
+// Stores grid layout
 #ifndef MAZETILE_H
 #define MAZETILE_H
 
@@ -8,24 +10,27 @@ class Player;
 class GameManager;
 
 class MazeTile {
-protected:
+ protected:
   int row;
   int col;
 
-public:
+ public:
+  // constructor
   MazeTile(int r, int c);
+  // virtual destructor
   virtual ~MazeTile();
 
   int getRow() const;
   int getCol() const;
 
-  // PURE virtual bc each tile decides walkability
+  // returns if the tile is walkable (PURE virtual)
   virtual bool isWalkable() const = 0;
 
-  // SPACE- default does nothing, override for interactive tiles
+  // SPACE - override for interactive tiles (default does nothing)
   virtual void interact(Player& p, GameManager& gm);
 
-  // trigger for doors- default doesnothing, DO NOT PURE virtual so only DoorTile needs to override.
+  // trigger for doors (default does nothing)
+  // DO NOT PURE virtual so only DoorTile needs to override
   virtual void trigger(Player& p, GameManager& gm);
 };
 
