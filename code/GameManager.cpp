@@ -258,7 +258,7 @@ vector<string> GameManager::getHardLayout() const {
   L.push_back("#.###.#F.#.#..#");
   L.push_back("#...#.#..#.#..#");
   L.push_back("###.#.##.#.##.#");
-  L.push_back("#..D...#..#...#");
+  L.push_back("#..D...#......#");
   L.push_back("#..#.#.##.#.###");
   L.push_back("#F.#.#..#.#...#");
   L.push_back("#..#D#..#.#.#.#");
