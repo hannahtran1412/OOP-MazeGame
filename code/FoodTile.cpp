@@ -20,29 +20,33 @@ FoodTile::~FoodTile() {
 bool FoodTile::isWalkable() const { return true; }
 
 void FoodTile::interact(Player& p, GameManager& gm) {
-  if (food != nullptr) {
-    // Store name and value BEFORE deleting food
+  try {
+    // if there is no food, throw an error
+    if (food == nullptr) {
+      throw runtime_error("No food left here.");
+    }
+
+    // store info before deleting
     string foodName = food->getName();
     int foodValue = food->getValue();
 
-    // apply the food effect to player (prints collected message if enabled)
+    // apply effect to player (adds strength)
     food->use(p);
 
-    // delete food object
+    // delete food to avoid reusing
     delete food;
     food = nullptr;
 
-    // Now safe to print info using stored values
-    cout << "Picked up " << foodName << "! Strength increased by " << foodValue
-         << endl;
+    cout << "Picked up " << foodName << "! Strength increased by " << foodValue << endl;
 
-    // replace with floor tile
+    // replace with floor tile after pickup
     gm.replaceWithFloor(getRow(), getCol());
+  }
 
-    return;
-  } else {
-    cout << "No food left here." << endl;
+  catch (const runtime_error& e) {
+    cout << "Food error: " << e.what() << endl;
   }
 }
+
 
 Food* FoodTile::getFood() { return food; }
