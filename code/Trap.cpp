@@ -14,18 +14,29 @@ Trap::Trap(int r, int c, double tPenalty, double blindSec) : DoorTile(r, c) {
 
 void Trap::trigger(Player& p, GameManager& gm) {
   // only trigger once
-  if (!triggered) {    // if the trap hasn't been triggered yet
-    triggered = true;  // mark as triggered
-    std::cout << "Trap triggered! -" << timePenalty << " seconds, blinded for "
-              << blindSeconds << " seconds!" << std::endl;
+  try{
+    if (!triggered) {    // if the trap hasn't been triggered yet
+      triggered = true;  // mark as triggered
+      std::cout << "Trap triggered! -" << timePenalty << " seconds, blinded for "
+                << blindSeconds << " seconds!" << std::endl;
 
-    // reduce time
-    gm.addTime(-timePenalty);
+      // reduce time
+      gm.addTime(-timePenalty);
 
-    // blindness effect would be handled in the GUI layer
-    gm.applyBlind(blindSeconds);  // start GUI blindness countdown
+      // blindness effect would be handled in the GUI layer
+      gm.applyBlind(blindSeconds);  // start GUI blindness countdown
 
-    // replace with floor tile
-    // gm.replaceWithFloor(getRow(), getCol());
+      // if the GUI or time didn’t change, something went wrong
+      if (blindSeconds <= 0 || timePenalty <= 0) {
+        throw runtime_error("Trap failed to apply penalty or blindness.");
+      }
+    }
   }
+  
+  catch (const runtime_error& e) {
+    cout << "Trap error: " << e.what() << endl;
+  }
+
+  // replace with floor tile
+  // gm.replaceWithFloor(getRow(), getCol());
 }

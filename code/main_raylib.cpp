@@ -196,6 +196,8 @@ int main() {
             }
         }
 
+        bool drewBlind = false;
+
         // Draw
         BeginDrawing();
         ClearBackground(Color{18,18,24,255});
@@ -218,6 +220,7 @@ int main() {
                 int fs = 40;
                 int w = MeasureText(msg, fs);
                 DrawText(msg, GetScreenWidth() / 2 - w / 2, GetScreenHeight() / 2 - 20, fs, RAYWHITE);
+                drewBlind = true;
             }
         } else if (state == GameState::PAUSED) {
             DrawGame(*gm, cellSize, margin);
@@ -236,6 +239,16 @@ int main() {
         }
 
         EndDrawing();
+
+        // error handling for blind
+        try {
+            if (state == GameState::PLAYING && gm != nullptr &&
+                gm->getBlindTime() > 0.0f && !drewBlind) {
+                throw std::runtime_error("GUI blind overlay not drawn while blinded.");
+            }
+        } catch (const std::runtime_error& e) {
+            std::cout << "GUI error: " << e.what() << std::endl;
+        }
 
         // Allow any key to exit after game over
         if (state == GameState::GAME_OVER && GetKeyPressed() != 0) {
