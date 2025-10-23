@@ -630,8 +630,6 @@ void GameManager::saveGame(const string& filename) const {
   }
   out << guardHPToSave << " " << defeatedFlag << "\n";
 
-  // Now write special tiles that currently exist.
-  // We’ll keep it simple and human-readable:
   // FOOD r c val
   // AWARD r c
   // TRAP r c
@@ -648,8 +646,7 @@ void GameManager::saveGame(const string& filename) const {
         continue;
       }
 
-      // Don’t serialize walls/floors; we rebuild them.
-      // Serialize only special stuff:
+      // Don’t serialize walls/floors we rebuild them.
       // 1) Food
       FoodTile* ft = dynamic_cast<FoodTile*>(t);
       if (ft != NULL) {
